@@ -4,6 +4,7 @@ const express = require('express');
 const http = require('http');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const db = require('./src/database');
 
 const app = express();
 
@@ -26,6 +27,16 @@ const mwMulter = require('./src/middlewares/multer');
 // Define a GET route
 app.get('/', (req, res) => {
   res.send('Hello from Express!');
+});
+
+app.get('/health', async (req, res) => {
+  try {
+    await db.raw('select 1');
+    res.status(200).json({status: 'ok'});
+  } catch (error) {
+    console.error('Health check failed:', error);
+    res.status(503).json({status: 'error'});
+  }
 });
 
 app.post('/analyze-card', mwMulter.upload.array('file'), tcgCheckerService.checkTCG);
